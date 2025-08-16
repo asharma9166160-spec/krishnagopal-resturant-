@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Krishnagopal Resturant — Pure Veg</title>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<style>
+:root{
+  --orange:#ff9800;
+  --accent:#ff5722;
+  --yellow:#fff700;
+  --bg:#fff8e7;
+  --dark:#222;
+  --card-shadow: 0 18px 50px rgba(0,0,0,0.12);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--dark);-webkit-font-smoothing:antialiased}
+
+/* TOPBAR */
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:var(--orange);color:white;position:sticky;top:0;z-index:999;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+.brand{display:flex;gap:12px;align-items:center}
+.flute-logo{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.site-title{font-family:'Baloo 2',cursive;font-size:28px;color:#111;text-shadow:0 1px 3px rgba(255,255,255,0.2);animation:pop 900ms ease}
+@keyframes pop{from{transform:translateY(-6px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+.toplinks{display:flex;gap:14px;align-items:center}
+.toplinks a{color:white;text-decoration:none;font-weight:600}
+.cart-btn{background:#111;color:var(--yellow);padding:8px 14px;border-radius:24px;border:0;font-weight:800;cursor:pointer}
+
+/* HERO */
+.hero{display:flex;gap:22px;align-items:center;justify-content:space-between;padding:36px 6%;background:linear-gradient(90deg, rgba(0,0,0,0.14), rgba(0,0,0,0.02)),url('https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?auto=format&fit=crop&w=1600&q=60') center/cover no-repeat;min-height:48vh;color:white}
+.hero-left{max-width:720px}
+.hero-left h1{font-family:'Baloo 2';font-size:48px;margin:4px 0;color:var(--yellow);text-shadow:2px 2px 12px rgba(0,0,0,0.5)}
+.hero-left p.lead{font-size:18px;margin:10px 0 16px;opacity:0.95}
+.cta{display:flex;gap:12px}
+.btn{padding:12px 18px;border-radius:30px;border:0;font-weight:800;cursor:pointer;transition:transform .16s, box-shadow .16s}
+.btn.primary{background:var(--accent);color:white;box-shadow:0 12px 30px rgba(255,87,34,0.12)}
+.btn.secondary{background:var(--yellow);color:#111}
+.btn:hover{transform:translateY(-4px)}
+
+/* hero right */
+.hero-right{min-width:300px;background:rgba(255,255,255,0.06);padding:18px;border-radius:12px;backdrop-filter:blur(4px);box-shadow:0 12px 36px rgba(0,0,0,0.12)}
+.hero-right h3{margin:0 0 6px}
+.eco-note{display:inline-block;padding:8px 12px;border-radius:999px;background:rgba(0,168,107,0.12);color:#007f4f;font-weight:700;margin-top:10px}
+
+/* main */
+main{padding:28px 6%}
+
+/* controls */
+.section-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.searchbar{flex:1;min-width:220px;background:white;padding:10px;border-radius:12px;display:flex;gap:8px;align-items:center;box-shadow:var(--card-shadow)}
+.searchbar input{border:0;outline:none;font-size:14px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-left:10px}
+.chip{padding:8px 12px;border-radius:20px;background:rgba(0,0,0,0.04);cursor:pointer;font-weight:700}
+.chip.active{background:var(--orange);color:white}
+
+/* grid */
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{background:white;border-radius:12px;padding:10px;box-shadow:var(--card-shadow);display:flex;flex-direction:column;gap:8px;overflow:hidden;transition:transform .18s,box-shadow .18s}
+.card:hover{transform:translateY(-8px);box-shadow:0 30px 70px rgba(0,0,0,0.12)}
+.thumb{height:160px;width:100%;object-fit:cover;border-radius:10px;transition:transform .45s ease, filter .3s}
+.card:hover .thumb{transform:scale(1.06);filter:brightness(.95)}
+.card h4{margin:0;font-size:16px;color:var(--dark);font-weight:800}
+.price{font-weight:900;color:var(--accent)}
+.card .desc{font-size:13px;color:#666}
+
+/* actions */
+.actions{display:flex;gap:8px;align-items:center}
+.small-btn{padding:8px 12px;border-radius:18px;border:0;cursor:pointer;font-weight:800}
+.small-btn.add{background:var(--orange);color:white}
+.small-btn.order{background:var(--yellow);color:#111}
+.small-btn.wa{background:transparent;border:1px solid rgba(0,0,0,0.06);padding:6px 10px}
+
+/* cart panel */
+.cart-panel{position:fixed;right:18px;bottom:18px;width:360px;max-width:calc(100% - 36px);border-radius:12px;background:white;box-shadow:0 20px 60px rgba(0,0,0,0.18);overflow:hidden;z-index:1200;display:none}
+.cart-header{padding:12px;background:var(--orange);color:white;display:flex;justify-content:space-between;align-items:center}
+.cart-body{max-height:360px;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.cart-footer{padding:12px;display:flex;flex-direction:column;gap:10px}
+
+/* orders */
+.orders-wrap{display:flex;gap:12px;flex-wrap:wrap}
+.order-card{background:white;padding:12px;border-radius:12px;box-shadow:var(--card-shadow);flex:1;min-width:260px}
+
+/* map */
+#map{height:280px;border-radius:12px;overflow:hidden}
+
+/* founders */
+.founders{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px}
+.founder{background:white;padding:12px;border-radius:12px;box-shadow:var(--card-shadow);display:flex;gap:12px;align-items:center;width:320px}
+.founder img{width:84px;height:84px;border-radius:8px;object-fit:cover}
+.founder .meta{font-weight:700}
+
+/* floating whatsapp */
+.fab{position:fixed;right:18px;bottom:110px;background:#25D366;color:white;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 16px 45px rgba(0,0,0,0.2);z-index:1400;cursor:pointer;transition:transform .14s}
+.fab:hover{transform:translateY(-6px)}
+
+/* footer */
+footer{background:var(--orange);color:white;padding:18px 6%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:28px}
+footer .small{font-size:13px;opacity:0.95}
+
+/* responsive */
+@media (max-width:900px){
+  .hero{flex-direction:column;text-align:center}
+  .hero-right{min-width:unset}
+  .menu-grid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .cart-panel{width:calc(100% - 32px);right:16px;bottom:12px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="flute-logo" aria-hidden>
+      <!-- BLACK FLUTE LOGO SVG -->
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="9" width="20" height="2" rx="1" fill="#111" opacity="0.98"/>
+        <circle cx="7" cy="10" r="0.9" fill="#111"/>
+        <circle cx="10" cy="10" r="0.9" fill="#111"/>
+        <circle cx="13" cy="10" r="0.9" fill="#111"/>
+      </svg>
+    </div>
+    <div class="site-title">Krishnagopal Resturant</div>
+  </div>
+
+  <nav class="toplinks">
+    <a href="#menu">Menu</a>
+    <a href="#orders">Orders</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+    <button class="cart-btn" id="openCart">Cart (<span id="cartCount">0</span>)</button>
+  </nav>
+</header>
+
+<section class="hero" role="banner">
+  <div class="hero-left">
+    <h1>Krishnagopal Resturant</h1>
+    <p class="lead">100% Pure Vegetarian • Eco-friendly packaging • Fresh Indian flavours</p>
+    <div class="cta">
+      <button class="btn primary" onclick="scrollTo('#menu')">View Menu</button>
+      <button class="btn secondary" onclick="scrollTo('#orders')">My Orders</button>
+    </div>
+    <div><span class="eco-note">♻ Biodegradable Packaging • Local Produce</span></div>
+  </div>
+
+  <aside class="hero-right" aria-label="Contact">
+    <h3>Contact</h3>
+    <div style="font-weight:800">📞 9166160770</div>
+    <div style="margin-top:8px;font-size:14px;color:rgba(255,255,255,0.95)">
+      Address:
+      <br><strong>Gulab Baag Bus Stand, Karauli, Rajasthan 322241</strong>
+    </div>
+    <div style="margin-top:12px;font-size:13px;color:rgba(255,255,255,0.95)">
+      Founders: <strong>Balkrishna</strong>, <strong>Mohika Bhardwaj</strong>
+      <br>Shareholders: <strong>Vivek Kumar Sharma</strong>, <strong>Lokesh Sharma</strong>
+    </div>
+  </aside>
+</section>
+
+<main>
+  <!-- MENU -->
+  <section id="menu">
+    <div class="section-header">
+      <div>
+        <h2 style="margin:0">Menu • 100 Veg Indian Items</h2>
+        <div style="color:#666;font-size:14px;margin-top:4px">Prices in ₹ (INR). Click Add to store items in cart.</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div class="searchbar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35" stroke="#444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="6" stroke="#444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <input id="search" placeholder="Search dishes (e.g., Paneer,Biryani)">
+        </div>
+        <div class="chips" id="categories"></div>
+      </div>
+    </div>
+
+    <div class="menu-grid" id="menuGrid" aria-live="polite"></div>
+  </section>
+
+  <!-- Orders & Tracking -->
+  <section id="orders" style="margin-top:28px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2>My Orders</h2>
+      <div style="font-size:14px;color:#666">Orders stored locally in your browser</div>
+    </div>
+
+    <div style="margin-top:12px" id="ordersList" class="orders-wrap"></div>
+
+    <div id="trackingPanel" style="margin-top:16px;display:none">
+      <h3>Delivery Tracking</h3>
+      <div id="map"></div>
+      <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
+        <div style="font-weight:800">Delivery Person:</div>
+        <div id="deliveryInfo" style="color:#333"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="about" style="margin-top:28px">
+    <h2>About Us</h2>
+    <p style="color:#666">Krishnagopal Resturant — Pure veg, locally sourced, eco-friendly packaging.</p>
+
+    <div class="founders" style="margin-top:12px">
+      <div class="founder">
+        <img id="founderBalkrishna" src="balkrishna.jpg" alt="Balkrishna (Founder)">
+        <div><div style="font-weight:900">Balkrishna</div><div style="font-size:13px;color:#666">Founder — Passionate about healthy vegetarian food.</div></div>
+      </div>
+
+      <div class="founder">
+        <img id="founderMohika" src="mohika.jpg" alt="Mohika Bhardwaj (Co-founder)">
+        <div><div style="font-weight:900">Mohika Bhardwaj</div><div style="font-size:13px;color:#666">Co-founder — Quality & hospitality lead.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" style="margin-top:28px">
+    <h2>Contact</h2>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
+      <div style="background:white;padding:12px;border-radius:12px;box-shadow:var(--card-shadow);min-width:260px">
+        <div style="font-weight:800">📞 Customer Care</div>
+        <div style="font-size:18px">9166160770</div>
+        <div style="color:#666;font-size:13px;margin-top:6px">Available 9:00 AM — 10:00 PM</div>
+      </div>
+
+      <div style="background:white;padding:12px;border-radius:12px;box-shadow:var(--card-shadow);min-width:260px;flex:1">
+        <div style="font-weight:800">Address</div>
+        <div style="margin-top:6px"><strong>Gulab Baag Bus Stand, Karauli, Rajasthan 322241</strong></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Cart panel -->
+<div id="cartPanel" class="cart-panel" role="dialog" aria-hidden="true">
+  <div class="cart-header">
+    <div>🧺 Your Cart (<span id="cartCount2">0</span>)</div>
+    <div><button id="closeCart" style="background:transparent;border:0;color:white;font-weight:800;cursor:pointer">Close</button></div>
+  </div>
+  <div class="cart-body" id="cartBody"></div>
+  <div class="cart-footer">
+    <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:800">Total:</div><div style="font-weight:900;color:var(--accent)">₹ <span id="cartTotal">0</span></div></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn primary" style="flex:1" id="checkoutBtn">Checkout</button>
+      <button class="btn secondary" style="flex:1" id="clearCartBtn">Clear</button>
+    </div>
+  </div>
+</div>
+
+<!-- Checkout modal -->
+<div id="modalBackdrop" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1500;align-items:center;justify-content:center">
+  <div style="width:760px;max-width:96%;background:white;border-radius:12px;overflow:auto;max-height:90vh;box-shadow:0 30px 80px rgba(0,0,0,0.3)">
+    <div style="padding:14px;background:var(--orange);color:white;font-weight:800">Place Order</div>
+    <div style="padding:18px">
+      <form id="checkoutForm">
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div style="flex:1"><label>Name</label><input required id="custName" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd" /></div>
+          <div style="flex:1"><label>Phone</label><input required id="custPhone" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd" /></div>
+        </div>
+        <div style="margin-top:10px"><label>Address</label><textarea required id="custAddress" rows="3" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd"></textarea></div>
+        <div style="display:flex;gap:12px;margin-top:10px">
+          <div style="flex:1"><label>Payment</label>
+            <select id="paymentMethod" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd">
+              <option value="upi">UPI</option>
+              <option value="cod">Pay on Delivery (Cash)</option>
+              <option value="card">Card (Simulated)</option>
+              <option value="netbanking">NetBanking (Simulated)</option>
+            </select>
+          </div>
+          <div style="flex:1"><label>Preferred Time</label><input id="prefTime" placeholder="ASAP / 7:00 PM" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd" /></div>
+        </div>
+
+        <div style="margin-top:12px;font-weight:800">Order Summary</div>
+        <div id="summaryBox" style="background:#fff;padding:10px;border-radius:8px;margin-top:8px;box-shadow:var(--card-shadow)"></div>
+
+        <div style="margin-top:12px;display:flex;gap:10px">
+          <button class="btn primary" type="submit">Place Order</button>
+          <button type="button" class="btn secondary" onclick="closeModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Success & feedback -->
+<div id="successBackdrop" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1600;align-items:center;justify-content:center">
+  <div style="width:520px;max-width:96%;background:white;border-radius:12px;overflow:hidden;">
+    <div style="padding:14px;background:var(--orange);color:white;font-weight:800">Order Confirmed</div>
+    <div style="padding:18px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+        <div style="width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--accent));display:flex;align-items:center;justify-content:center;color:white;font-size:40px">✓</div>
+        <div style="font-weight:800" id="placedOrderId">Order ID: -</div>
+        <div style="color:#666" id="placedDetails">We'll contact you shortly for confirmation.</div>
+
+        <div style="width:100%;margin-top:12px">
+          <div style="font-weight:800">Rate your experience</div>
+          <div style="margin-top:8px;font-size:28px" id="stars">
+            <span data-star="1">☆</span><span data-star="2">☆</span><span data-star="3">☆</span><span data-star="4">☆</span><span data-star="5">☆</span>
+          </div>
+          <textarea id="feedbackText" placeholder="Any feedback?" style="width:100%;margin-top:8px;padding:10px;border-radius:8px;border:1px solid #ddd"></textarea>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn primary" onclick="submitFeedback()">Submit Feedback</button>
+            <button class="btn secondary" onclick="closeSuccess()">Later</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating WhatsApp -->
+<div class="fab" id="whatsappFab" title="Message us on WhatsApp">💬</div>
+
+<footer>
+  <div class="left">© 2025 Krishnagopal Resturant</div>
+  <div class="small">Website made by Balkrishna • Customer Care: 9166160770 • Gulab Baag Bus Stand, Karauli - 322241</div>
+</footer>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+/* ---------- Menu data & dynamic images ---------- */
+function imageFor(name){
+  const q = encodeURIComponent(name + ",vegetarian,indian,food");
+  return `https://source.unsplash.com/600x400/?${q}`;
+}
+
+/* Build initial menu (core items) and expand to 100 */
+let menuItems = [
+  "Paneer Tikka","Veg Seekh Kebab","Hara Bhara Kebab","Corn Chilli","Chilli Paneer","Spring Rolls","Aloo Tikki","Masala Dosa","Idli (4pcs)","Vada (2pcs)",
+  "Dal Tadka","Dal Makhani","Paneer Butter Masala","Kadai Paneer","Shahi Paneer","Navratan Korma","Aloo Gobi","Chana Masala","Matar Paneer","Bhindi Masala",
+  "Malai Kofta","Kadhi Pakora","Baingan Bharta","Paneer Bhurji","Gobi Manchurian","Vegetable Jalfrezi","Corn Masala","Paneer Lababdar","Mushroom Masala","Soya Chunk Curry",
+  "Veg Biryani","Paneer Biryani","Jeera Rice","Veg Fried Rice","Schezwan Fried Rice","Lemon Rice","Peas Pulao","Hyderabadi Veg Biryani",
+  "Butter Naan","Garlic Naan","Tandoori Roti","Missi Roti","Paratha (Plain)","Lachha Paratha","Roomali Roti",
+  "Veg Thali (Regular)","Special Thali","North Indian Combo (2 pax)","South Indian Combo (Single)","Biryani + Raita Combo","Paneer Meal","Family Pack (4 pax)",
+  "Onion Uttapam","Rava Dosa","Ghee Pongal","Keerai Poriyal","Tomato Rice","Coconut Chutney","Puliogare",
+  "Veg Manchurian","Vegetable Chow Mein","Paneer Chilli (Gravy)","Veg Hakka Noodles","Sweet & Sour Veg","Hot & Garlic Noodles",
+  "Masala Chai","Filter Coffee","Fresh Lime Soda","Mango Lassi","Buttermilk (Chaas)","Rooh Afza Sharbat",
+  "Gulab Jamun (2pcs)","Rasmalai (2pcs)","Gajar ka Halwa","Kulfi (Mango/Rose)","Jalebi (4pcs)","Phirni",
+  "Samosa (2pcs)","Pav Bhaji","Vada Pav","Pani Puri (6pcs)","Aloo Chaat","Dahi Puri (6pcs)","Bhel Puri","Kathi Roll (Veg)","Paneer Frankie","Momos (Veg Steam 6pcs)",
+  "Paneer Pakora","Crispy Gobi 65","Tandoori Aloo","Masala Peanuts","Cheese Chilli Toast","Masala Corn","Dabeli","Kachori (2pcs)","Schezwan Idli",
+  "Paneer Tawa","Malai Paneer","Palak Paneer","Shahi Vegetable","Mix Vegetable","Bharta Special","Aloo Mutter","Corn Kheema (veg)","Veg Kolhapuri","Kashmiri Dum Aloo"
+];
+
+// expand to 100 items by appending suffixes where needed
+while(menuItems.length < 100){
+  const base = menuItems[menuItems.length % menuItems.length];
+  menuItems.push(base + " (Special)");
+}
+
+/* convert to objects with price and desc */
+let menuObjs = menuItems.map((name,i)=>{
+  // price generation (friendly)
+  const basePrice = 50 + ((i * 37) % 300);
+  return { name, category: ["Starters","Main Course","Biryani & Rice","Snacks","South Indian","Chinese","Beverages","Desserts","Breads","Thali & Combos"][i % 10], price: Math.round(basePrice/5)*5, desc: "Delicious " + name, img: imageFor(name) };
+});
+
+/* ---------- UI refs ---------- */
+const menuGrid = document.getElementById('menuGrid');
+const categoriesWrap = document.getElementById('categories');
+const searchEl = document.getElementById('search');
+const openCart = document.getElementById('openCart');
+const cartCount = document.getElementById('cartCount');
+const cartCount2 = document.getElementById('cartCount2');
+const cartPanel = document.getElementById('cartPanel');
+const cartBody = document.getElementById('cartBody');
+const cartTotal = document.getElementById('cartTotal');
+const closeCart = document.getElementById('closeCart');
+const clearCartBtn = document.getElementById('clearCartBtn');
+const checkoutBtn = document.getElementById('checkoutBtn');
+const modalBackdrop = document.getElementById('modalBackdrop');
+const summaryBox = document.getElementById('summaryBox');
+const ordersList = document.getElementById('ordersList');
+const trackingPanel = document.getElementById('trackingPanel');
+const deliveryInfo = document.getElementById('deliveryInfo');
+
+let cart = JSON.parse(localStorage.getItem('kg_cart') || '[]');
+let orders = JSON.parse(localStorage.getItem('kg_orders') || '[]');
+let feedback = JSON.parse(localStorage.getItem('kg_feedbacks') || '[]');
+
+/* ---------- Build categories ---------- */
+const categories = ["All", ...Array.from(new Set(menuObjs.map(i=>i.category)))];
+function buildCategories(){
+  categoriesWrap.innerHTML='';
+  categories.forEach(cat=>{
+    const el = document.createElement('div');
+    el.className = 'chip' + (cat==='All' ? ' active' : '');
+    el.innerText = cat;
+    el.onclick = ()=> { document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); renderMenu(cat); }
+    categoriesWrap.appendChild(el);
+  });
+}
+
+/* ---------- Render menu ---------- */
+function renderMenu(active='All'){
+  const q = (searchEl.value || '').trim().toLowerCase();
+  menuGrid.innerHTML = '';
+  const filtered = menuObjs.filter(it=>{
+    const catOk = active === 'All' || it.category === active;
+    const qOk = !q || it.name.toLowerCase().includes(q) || (it.desc && it.desc.toLowerCase().includes(q));
+    return catOk && qOk;
+  });
+
+  if(filtered.length === 0){ menuGrid.innerHTML = '<div style="padding:18px;background:#fff;border-radius:10px;box-shadow:var(--card-shadow)">No items found.</div>'; return; }
+
+  filtered.forEach(it=>{
+    const card = document.createElement('div'); card.className='card';
+    card.innerHTML = `
+      <img class="thumb" loading="lazy" src="${it.img}" alt="${it.name}">
+      <h4>${it.name} <span style="float:right" class="price">₹ ${it.price}</span></h4>
+      <div class="desc">${it.desc || ''}</div>
+      <div class="actions">
+        <button class="small-btn add" onclick="addToCart('${escapeJS(it.name)}', ${it.price})">Add</button>
+        <button class="small-btn order" onclick="quickOrder('${escapeJS(it.name)}', ${it.price})">Order</button>
+        <button class="small-btn wa" onclick="openWhatsApp('${escapeJS(it.name)}', ${it.price})">WhatsApp</button>
+      </div>
+    `;
+    menuGrid.appendChild(card);
+  });
+}
+
+function escapeJS(t){ return t.replace(/'/g,"\\'").replace(/\"/g,'\\"'); }
+
+/* ---------- Cart logic ---------- */
+function saveCart(){ localStorage.setItem('kg_cart', JSON.stringify(cart)); updateCartUI(); }
+function updateCartUI(){
+  const totalQty = cart.reduce((s,i)=>s + i.qty,0);
+  cartCount.innerText = totalQty;
+  cartCount2.innerText = totalQty;
+  cartTotal.innerText = cart.reduce((s,i)=>s + i.qty*i.price,0).toFixed(0);
+  cartBody.innerHTML = '';
+  if(cart.length === 0){ cartBody.innerHTML = '<div style="padding:12px;color:#666">Your cart is empty.</div>'; return; }
+  cart.forEach((it, idx)=>{
+    const el = document.createElement('div');
+    el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-weight:800">${it.name}</div><div style="font-size:13px;color:#666">₹ ${it.price} × ${it.qty}</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+        <div><button onclick="changeQty(${idx},1)">＋</button><button onclick="changeQty(${idx},-1)">－</button></div>
+        <button onclick="removeItem(${idx})" style="background:var(--accent);color:white;border:0;border-radius:8px;padding:6px 8px;cursor:pointer">Remove</button>
+      </div>
+    </div>`;
+    cartBody.appendChild(el);
+  });
+}
+function changeQty(i, delta){ cart[i].qty += delta; if(cart[i].qty <= 0) cart.splice(i,1); saveCart(); }
+function removeItem(i){ cart.splice(i,1); saveCart(); }
+function addToCart(name, price){
+  const existing = cart.find(c=>c.name===name);
+  if(existing) existing.qty += 1; else cart.push({name, price, qty:1});
+  saveCart(); flashCart();
+}
+function quickOrder(name, price){ cart = [{name,price,qty:1}]; saveCart(); openCartPanel(); openCheckout(); }
+function openWhatsApp(name, price){
+  const msg = encodeURIComponent(`Hello, I want to order: ${name} (₹${price}). Contact: 9166160770`);
+  window.open(`https://wa.me/919166160770?text=${msg}`, '_blank');
+}
+
+/* cart panel */
+openCart.onclick = ()=> openCartPanel();
+closeCart.onclick = ()=> closeCartPanel();
+function openCartPanel(){ cartPanel.style.display = 'block'; updateCartUI(); }
+function closeCartPanel(){ cartPanel.style.display = 'none'; }
+clearCartBtn.onclick = ()=> { if(confirm('Clear cart?')){ cart=[]; saveCart(); } }
+
+/* checkout */
+checkoutBtn.onclick = ()=> { if(cart.length===0){ alert('Cart empty — add items first'); return; } openCheckout(); }
+function openCheckout(){
+  const lines = cart.map(i=>`${i.qty} × ${i.name} — ₹ ${i.price*i.qty}`);
+  const total = cart.reduce((s,i)=>s + i.qty*i.price,0);
+  summaryBox.innerHTML = `<div style="font-weight:800">${cart.length} items</div><div style="margin-top:8px">${lines.join('<br>')}</div><div style="margin-top:8px;font-weight:900">Total: ₹ ${total.toFixed(0)}</div>`;
+  modalBackdrop.style.display = 'flex';
+}
+function closeModal(){ modalBackdrop.style.display = 'none'; }
+
+/* place order simulated */
+document.getElementById('checkoutForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const name = document.getElementById('custName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  const address = document.getElementById('custAddress').value.trim();
+  const payment = document.getElementById('paymentMethod').value;
+  const pref = document.getElementById('prefTime').value || 'ASAP';
+  if(!name||!phone||!address){ alert('Fill basic details'); return; }
+
+  const id = 'KG' + Date.now().toString().slice(-6);
+  const order = { id, items: cart.slice(), total: cart.reduce((s,i)=>s+i.qty*i.price,0), customer:{name,phone,address,pref}, payment, status:'Out for Delivery', placedAt: new Date().toISOString() };
+  order.delivery = { name:['Raju','Sohail','Amit','Ramesh'][Math.floor(Math.random()*4)] + ' (Delivery)', phone:'9' + (Math.floor(Math.random()*900000000)+100000000), coords:{lat:26.50 + Math.random()*0.02, lng:76.95 + Math.random()*0.02} };
+
+  orders.unshift(order);
+  localStorage.setItem('kg_orders', JSON.stringify(orders));
+  cart = []; saveCart();
+  closeModal();
+  showSuccess(order);
+  renderOrders();
+});
+
+/* success & feedback */
+function showSuccess(order){
+  document.getElementById('placedOrderId').innerText = 'Order ID: ' + order.id;
+  document.getElementById('placedDetails').innerText = 'Total: ₹ ' + order.total + '. Delivery by ' + order.delivery.name;
+  document.getElementById('successBackdrop').style.display = 'flex';
+  startTracking(order);
+}
+function closeSuccess(){ document.getElementById('successBackdrop').style.display='none'; }
+document.getElementById('stars').addEventListener('click', e=>{
+  const s = e.target.closest('span[data-star]');
+  if(!s) return;
+  const r = Number(s.dataset.star);
+  Array.from(document.querySelectorAll('#stars span')).forEach(sp=> sp.innerText = Number(sp.dataset.star) <= r ? '★':'☆');
+  document.getElementById('stars').dataset.rating = r;
+});
+function submitFeedback(){
+  const rating = Number(document.getElementById('stars').dataset.rating) || 0;
+  const text = document.getElementById('feedbackText').value.trim();
+  feedback.push({rating,text,at:new Date().toISOString()});
+  localStorage.setItem('kg_feedbacks', JSON.stringify(feedback));
+  alert('Thanks for your feedback!');
+  closeSuccess();
+}
+
+/* render orders */
+function renderOrders(){
+  ordersList.innerHTML = '';
+  if(orders.length===0) ordersList.innerHTML = '<div style="padding:12px;color:#666">No orders yet.</div>';
+  orders.forEach(ord=>{
+    const div = document.createElement('div'); div.className = 'order-card';
+    div.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong>${ord.id}</strong><div style="font-size:13px;color:#666">${new Date(ord.placedAt).toLocaleString()}</div></div>
+        <div style="font-weight:900">₹ ${ord.total}</div>
+      </div>
+      <div style="margin-top:8px">${ord.items.map(i=>`${i.qty}× ${i.name}`).join(', ')}</div>
+      <div style="margin-top:8px;display:flex;gap:8px">
+        <button class="btn secondary" onclick="viewOrder('${ord.id}')">View</button>
+        <button class="btn primary" onclick="trackOrder('${ord.id}')">Track</button>
+      </div>
+    `;
+    ordersList.appendChild(div);
+  });
+}
+function viewOrder(id){ const ord = orders.find(o=>o.id===id); if(!ord) return alert('Not found'); alert(`Order ${ord.id}\nItems:\n${ord.items.map(i=>`${i.qty}×${i.name}`).join('\n')}\nTotal: ₹${ord.total}\nStatus: ${ord.status}`); }
+
+/* tracking and map (Leaflet) */
+let map, deliveryMarker, trackingInterval;
+function openMap(){
+  if(map) return;
+  map = L.map('map').setView([26.493, 76.97], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+}
+function trackOrder(id){
+  const ord = orders.find(o=>o.id===id); if(!ord) return alert('Order not found');
+  trackingPanel.style.display='block';
+  openMap();
+  if(deliveryMarker) map.removeLayer(deliveryMarker);
+  deliveryMarker = L.marker([ord.delivery.coords.lat, ord.delivery.coords.lng]).addTo(map).bindPopup(`${ord.delivery.name}`);
+  deliveryInfo.innerText = `${ord.delivery.name} • ${ord.delivery.phone}`;
+  const dest = {lat:26.493, lng:76.97};
+  let cur = {...ord.delivery.coords};
+  if(trackingInterval) clearInterval(trackingInterval);
+  trackingInterval = setInterval(()=>{
+    cur.lat += (dest.lat - cur.lat) * 0.06;
+    cur.lng += (dest.lng - cur.lng) * 0.06;
+    deliveryMarker.setLatLng([cur.lat, cur.lng]); map.setView([cur.lat, cur.lng], 13);
+    if(Math.abs(cur.lat - dest.lat) < 0.0006 && Math.abs(cur.lng - dest.lng) < 0.0006){ clearInterval(trackingInterval); alert('Delivery has arrived (simulated).'); }
+  },1200);
+}
+function startTracking(order){ renderOrders(); setTimeout(()=>trackOrder(order.id),700); }
+
+/* init UI */
+buildCategories(); renderMenu('All'); updateCartUI(); renderOrders();
+
+/* search */
+searchEl.addEventListener('input', ()=> { const active = document.querySelector('.chip.active'); renderMenu(active ? active.innerText : 'All'); });
+
+/* helpers */
+function flashCart(){ openCart.style.transform = 'scale(1.05)'; setTimeout(()=>openCart.style.transform = '',200); }
+function scrollTo(sel){ document.querySelector(sel).scrollIntoView({behavior:'smooth',block:'start'}); }
+
+/* expose */
+window.addToCart = addToCart; window.quickOrder = quickOrder; window.openWhatsApp = openWhatsApp; window.trackOrder = trackOrder;
+
+/* Floating WhatsApp button */
+document.getElementById('whatsappFab').addEventListener('click', ()=> {
+  window.open('https://wa.me/919166160770?text=' + encodeURIComponent('Hello Krishnagopal Resturant, I have a query...'), '_blank');
+});
+
+/* cleanup */
+window.addEventListener('beforeunload', ()=> { if(trackingInterval) clearInterval(trackingInterval); });
+
+</script>
+</body>
+</html>
